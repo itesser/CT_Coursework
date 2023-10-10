@@ -1,0 +1,47 @@
+===== Day 1 =======
+
+
+-- <--- use for comments
+
+return  data with SELECT
+
+
+SELECT COUNT(*) FROM customers  <---- total rows in customers
+
+SELECT first_name, COUNT(last_name) FROM customers <---- errrrror between agg funct and list (group by comes later)
+
+SELECT COUNT(first_name), COUNT(last_name) FROM customers <---- returns only one answer because they're the same?
+
+
+
+==== session review queries =====
+SELECT name, age FROM titanic
+
+# If there is a mix of upper and lower chars, put quotes around the column names (elephant specific?)
+
+# by convention, COUNT should be in all caps, but it will work lowercase.
+
+SELECT * FROM titanic 
+WHERE age >= 60
+ORDER BY age
+DESC;
+
+# add LIMIT 5; to see 5 oldest
+
+## rough draft of final hw question (which class had the most people)
+SELECT pclass, COUNT(pclass) FROM titanic
+GROUP BY pclass
+ORDER BY count
+DESC;
+
+## Final Draft of final HW question
+SELECT pclass, COUNT(pclass)AS pclass_count FROM titanic
+GROUP BY pclass
+ORDER BY pclass_count
+DESC
+LIMIT 1;
+
+## showing how to use infinite wildcard(%)
+SELECT * FROM titanic
+WHERE name LIKE '%Kath%';
+
