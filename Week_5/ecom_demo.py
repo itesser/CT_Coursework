@@ -31,9 +31,10 @@ def create_tables(sql_filepath: str):
         except psycopg2.ProgrammingError as msg:
             print(f"Command skipped {msg}")
 
-def insert_data(sql_filepath:str):
+
+def insert_data(sql_filepath: str):
     start = read_sql_file(sql_filepath)
-    commands = start.spilit(';')
+    commands = start.split(";")
     for command in commands:
         try:
             print(command)
