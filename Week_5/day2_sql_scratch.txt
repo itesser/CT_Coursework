@@ -1,0 +1,126 @@
+SELECT *
+FROM address;
+
+-- query all first and last names from actors table
+SELECT CONCAT(first_name, ' ', last_name) AS full_name
+FROM actor;
+
+SELECT * 
+FROM payment
+
+WHERE amount <> 2.99;
+
+-- find actors whose first names end with 'r'
+SELECT first_name, last_name, actor_id
+FROM actor
+WHERE first_name LIKE '%r';
+
+-- exact number of wildcards:
+SELECT first_name, last_name, actor_id
+FROM actor
+WHERE first_name LIKE 'K___';
+
+--- betweeen two values
+SELECT customer_id, amount
+FROM payment
+WHERE amount BETWEEN 2 AND 7;
+
+-- sorted unique values
+SELECT DISTINCT amount
+FROM payment
+WHERE amount BETWEEN 2 AND 8
+ORDER BY amount
+DESC;
+
+--
+--
+-- 
+
+-- avg payment (over 6 dollars)
+SELECT AVG(amount)
+FROM payment
+WHERE amount > 6;
+-- 8.08
+
+-- number of payments (over 6 dollars)
+SELECT COUNT(amount)
+FROM payment
+WHERE amount > 6;
+-- 2423
+
+-- max  payments (over 6 dollars)
+SELECT MAX(amount)
+FROM payment
+WHERE amount > 6;
+-- 11.99 
+
+-- min payments (over 6 dollars)
+SELECT MIN(amount)
+FROM payment
+WHERE amount > 6;
+-- 6.99
+
+--SELECT COUNT(amount)
+FROM payment
+WHERE amount = (SELECT MAX(amount) FROM payment)
+--8
+
+-- frequency of payment amounts
+SELECT amount, COUNT(amount) AS count_of_amount
+FROM payment
+GROUP BY amount
+ORDER BY count_of_amount DESC;
+
+-- nonsense query
+SELECT COUNT(customer_id), email
+FROM customer
+WHERE email LIKE 'j__.w%'
+GROUP BY email
+HAVING COUNT(customer_id) > 0;
+
+-- nonsense query #2
+SELECT CONCAT(first_name, ' ', last_name) AS full_name, COUNT(store_id) AS num_of_stores
+FROM staff
+GROUP BY full_name
+ORDER BY COUNT(store_id);
+
+-- lunch break -- 
+--
+-- join practice 
+-- Inner
+SELECT CONCAT(first_name, ' ', last_name) AS full_name, film.film_id, film.title
+FROM film_actor
+INNER JOIN actor
+ON actor.actor_id = film_actor.actor_id
+INNER JOIN film
+ON film_actor.film_id = film.film_id;
+
+-- Left
+SELECT CONCAT(first_name, ' ', last_name) AS full_name, film_id, actor.actor_id
+FROM film_actor
+LEFT JOIN actor
+ON actor.actor_id = film_actor.actor_id;
+
+-- full/outer join to see info on customers in Angola
+SELECT cu.first_name, cu.last_name, cu.email, country
+FROM customer as cu
+FULL JOIN address as ad
+ON cu.address_id = ad.address_id
+FULL JOIN city 
+ON ad.city_id = city.city_id
+FULL JOIN country
+on city.country_id = country.country_id
+WHERE country = 'Angola'
+
+
+-- Select the rental dates, rental ids, the staff ids, the name of the language, and the film title using full joins. You are looking for all films written in english
+
+
+-- randall code 
+select c.first_name || ' ' || c.last_name as customer,
+       c.email,
+       co.country
+from customer c, address a, city ci, country co
+where c.address_id = a.address_id
+ and  a.city_id = ci.city_id
+ and  ci.country_id = co.country_id

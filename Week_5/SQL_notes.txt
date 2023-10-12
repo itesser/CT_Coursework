@@ -45,3 +45,15 @@ LIMIT 1;
 SELECT * FROM titanic
 WHERE name LIKE '%Kath%';
 
+
+
+===== day 2 =====
+in SELECT:
+columns that are in the FROM table can be called as their normal names
+columns that are in OTHER (joined) tables need to be called in as [tablename].[column name]
+
+^^ actually only when the column name is used in multiple tables
+
+/*
+This is a multiline comment
+*/

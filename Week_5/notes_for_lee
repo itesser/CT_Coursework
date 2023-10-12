@@ -1,0 +1,51 @@
+Lee Notes
+
+Whiteboard - https://www.codewars.com/kata/576bb71bbbcf0951d5000044/discuss/python
+
+Setting up dvd_sales_data (from class notes) PG Admin
+- importing data
+- might be fine if it fails, refresh the server and tables  will probably pop up
+- lots of troubleshooting at this point
+- if you can see the time on anyone's screen, go forward to 33 past the hour
+
+Right Click on "postgres" to get auto-generated ERD for database
+Right Schema -> Open query tool
+F5 to run queries
+
++ Built in scratch pad! (I love this feature)
++ Dark mode exists and isn't super dark
+
+- concat function -> naked concat first_name || ' ' || last_name  
+- aliasing (though pg admin doesn't like using aliases as variables later in the function)
+- where clause
+- not equal operand (<>) (!= also works)
+- LIKE and % <-- infinite wildcard
+- briefly touch on LOWER()
+- _ <-- literal wildcard
+- BETWEEN + AND
+- ORDER BY (ASC/DESC)
+- DISTINCT
+- Group By
+- JOINS
+-- Inner, Left, Right
+-- FULL - -- Joining 4 different tables to see info on customers in Angola/Brazil
+
+Alex taught:
+SELECT rental.rental_date, rental.rental_id, rental.staff_id, language.name, film.title
+FROM rental
+FULL JOIN inventory
+ON rental.inventory_id = inventory.inventory_id
+FULL JOIN film
+ON inventory.film_id = film.film_id
+FULL JOIN language
+ON language.language_id = film.language_id
+WHERE language.name = 'English'
+
+
+Randall prefers:
+SELECT  rental_date, rental_id, staff_id, title, l.name
+FROM rental r, inventory i, film, language l
+WHERE r.inventory_id = i.inventory_id
+AND i.film_id = film.film_id
+AND film.language_id = l.language_id
+AND l.name = 'English'
