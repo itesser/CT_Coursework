@@ -1,0 +1,17 @@
+'members','PK','member_id','SERIAL','','first_name','VARCHAR(20)','','last_name','VARCHAR(20)','','join_date','DATE','','tickets_bought','INTEGER','','status','VARCHAR(20)','','last_visit','DATETIME','','points','INTEGER'
+
+'box_office','PK','order_id','SERIAL','','guest_status','VARCHAR()','FK','member_id','INTEGER','','ticket_qty','INTEGER','FK','screening_id','INTEGER','FK','tt_id','INTEGER'
+
+'snack_bar','PK','snack_id','SERIAL','','snack_name','VARCHAR(20)','','inv_qty','INTEGER','','restock_thresh','INTEGER','','supplier','VARCHAR(40)','','last_ordered','DATE','','price','NUMERIC(5,2)'
+
+'movies','PK','movie_id','SERIAL','','movie_title','VARCHAR(30)','','studio','VARCHAR(20)','','status','VARCHAR(15)','','release_date','DATE','','expected_close','DATE','','actual_close','DATE','','tickets_sold','INTEGER','','runtime','INTEGER'
+
+'screenings','PK','screening_id','SERIAL','FK','movie_id','INTEGER','FK','screen_id','INTEGER','','showtime','INTEGER','','show_date','DATE','','filled_seats','INTEGER'
+
+'snack_sales','PK','sale_id','SERIAL','FK','member_id','INTEGER','','sale_total','NUMERIC(5,2)','','sale_at','DATETIME'
+
+'screens','PK','screen_id','SERIAL','','room_name','VARCHAR(20)','','capacity','INTEGER'
+
+'ticket_type','PK','tt_id','SERIAL','','ticket_name','VARCHAR(40)','','cost','NUMERIC(4,2)'
+
+'snack_details','FK','sale_id','INTEGER','FK','snack_id','INTEGER','','qty','INTEGER'

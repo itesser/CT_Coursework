@@ -1,0 +1,58 @@
+Whiteboard (James): https://www.codewars.com/kata/5410c0e6a0e736cf5b000e69/train/python
+
+lists are slower than dictionaries for retreiving data
+NoSQL is to SQL as dictionaries are to lists
+
+SQL is limited, with a large (millions) database, and each query has to scan through the whole thing to find what it needs.
+
+=== Horizontal Scaling ===
+add more servers (cluster) to lighten the load
+- replication vs sharding
+-- replication - the whole database is duplicated. Any node in any cluster can answer any query (but every node needs to be updated with every change)
+-- sharding - random portions of data are stored in different nodes/cluster (not split in an orderly way). Faster, lighter, more susceptible to loss if a node goes down
+- por que no los dos? (yeah, do both)
+
+=== Vertical Scaling === 
+build "up" in stead of out
+- upgrade hardware to do more and faster (financially cheaper)
+- still putting all the strain on a single server
+"there is no i in team"
+
+======= NoSQL =======
+mongo db, horiz w/ sharding
+store information in a collection
+NON TABULAR FORMAT
+each record is a dict instead of a row
+as ACIDic as SQL
+Built in horizontal scaling
+slight differences in syntax from postgres and mySQL
+even though there are more bytes of data, everything is more fluid, so less 'heavy'
+
+========================
+~~~~~~~~~ ACID ~~~~~~~~~
+========================
+Atomicity
+Consistency
+Isolation
+Durability
+
+Principles of SQL-based databases
+
+** Atomicity **
+Transactions are all-or-nothing. Any error voids the whole operation.
+
+** Consistency **
+The rules you put on columns will not be violated
+
+** Isolaiton ** 
+Transactions/operations happen one at a time. Records are locked while being operated on.
+
+** Durability **
+Transactions immediately committed to hard storage (not RAM)
+
+
+
+
+
+Scalability
+

@@ -13,7 +13,7 @@ def write_insert(line):
         output.write(');\n\n')    
 
 
-with open(r'dealer_to_insert.csv') as file:
+with open(r'dealer_two_insert.csv') as file:
     data = file.readlines()
     for line in data:    
         write_insert(line)

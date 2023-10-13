@@ -1,0 +1,53 @@
+CREATE TABLE IF NOT EXISTS dealer_depts(
+dept_ID SERIALPRIMARY KEY,
+dept_name VARCHAR(30)
+);
+
+CREATE TABLE IF NOT EXISTS employees(
+employee_id SERIALPRIMARY KEY,
+name VARCHAR(40),
+dept_id INTEGER,
+ FOREIGN KEY(dept_id) REFERENCES ____(dept_id)
+);
+
+CREATE TABLE IF NOT EXISTS owners(
+owner_id SERIALPRIMARY KEY,
+contact_info VARCHAR(255),
+billing_info VARCHAR(255),
+owner_name VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS vehicles(
+car_id SERIALPRIMARY KEY,
+owner_id INTEGER,
+ FOREIGN KEY(owner_id) REFERENCES ____(owner_id),
+make_model VARCHAR(60),
+milage INTEGER
+);
+
+CREATE TABLE IF NOT EXISTS service_dept(
+service_id SERIALPRIMARY KEY,
+car_id INTEGER,
+ FOREIGN KEY(car_id) REFERENCES ____(car_id),
+service_date DATETIME
+);
+
+CREATE TABLE IF NOT EXISTS service_records(
+service_id SERIAL,
+ FOREIGN KEY(service_id) REFERENCES ____(service_id),
+employee_id INTEGER,
+ FOREIGN KEY(employee_id) REFERENCES ____(employee_id),
+work_done VARCHAR(255),
+);
+
+CREATE TABLE IF NOT EXISTS car_sales(
+invoice_id SERIALPRIMARY KEY,
+employee_id INTEGER,
+ FOREIGN KEY(employee_id) REFERENCES ____(employee_id),
+sale_date DATETIME,
+car_id INTEGER,
+ FOREIGN KEY(car_id) REFERENCES ____(car_id),
+owner_id INTEGER,
+ FOREIGN KEY(owner_id) REFERENCES ____(owner_id),
+);
+
