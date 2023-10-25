@@ -135,8 +135,8 @@ editor_options:
 -   awake: continuous
 
 ```{r}
-
-view(msleep)
+library(ggplot2)
+# view(msleep)
 ```
 
 ```{r}
@@ -149,9 +149,16 @@ msleep %>%
 ```
 
 ```{r}
+enhanced_msleep<- msleep%>%
+  mutate(total_hours = sleep_total + awake,
+         brain_perc = (brainwt / bodywt)*100)
 
+view(enhanced_msleep)
 ```
 
 ```{r}
-
+ggplot(enhanced_msleep, aes(sleep_rem, brain_perc, color = order))+
+  geom_point()+
+  scale_x_log10()+
+  scale_y_log10()
 ```
