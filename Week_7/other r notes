@@ -1,0 +1,55 @@
+in R dataframes,  columns are called variables and rows are called observations
+~~ because columns are called variables, we don't need to put quotes around them when asking for them
+
+
+#FIRST THING, THIS COURSE MENTIONS PIPES
+- Pipes have to go at the end of lines, not the beginning
+- indentation doesn't seem to super matter for pipes
+
+~~~
+filter() <- subsetting verb to look at a selection of observations (rows)
+-- > filter(year == 2007) <- double-equals, because you want this to evaluate to TRUE
+
+~~
+arrange() <- sorting verb. put in one or more variable, results will be in ascending order
+-- use the sub-function desc() for descending variables
+
+~~
+mutate() <- verb to change/add variables(cols)
+-- Can be used (re)assign values to existing columns
+
+** just running a pipe sequence doesn't mean you're changing the base data. If you're not assigning it to anything, base data remains unchanged
+
+~~~~~
+GGPLOT2
+~~~~~
+The plus signs are literally adding layers, which may or may not overlap your existing objects
+
+a: dataset
+b: AESTHETICS MEAN WHAT'S X AND WHATS Y
+b-b: PLUS SIGN TO ADD A LAYER/LINE
+c: how to shape (can be as simple as geom_point() )
+
+~~
+geoms
+~~
+_point (scatter)
+
+~~~
+logs in GGplot 
+... i find log scales vaugely uncomfortable
+
+scale_x_log10() (also works for Y) <-- super useful for spacing out data that is crunched up against(or close to) the axes
+
+~~
+aes() == aesthetics. Primarily used for defining axes
+somtimes seen with the keyword "mapping" 
++ x
++ y
++ color
++ size
+~
+
+~~
++ facet_wrap() <-- gets its own line
+tilde for "by", so facet_wrap(~ day) <-- splits each day of the week into its own graph

@@ -1,0 +1,157 @@
+---
+title: "R for Data Exploration, Visualizations, Functions, Conditionals, Loops, Tibbles, and Tidy Data" 
+author: "Alex Lucchesi"    
+date: "March 31st, 2023"
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+# **R Libraries: ggplot2, dplyr**
+
+### Homework
+
+1.  Do 5 CodeWars problems in R. Share your solutions here:
+
+    <https://www.codewars.com/kata/53af2b8861023f1d88000832/train/r>
+
+    ```{r}
+    are_you_playing_banjo <- function(name){
+     if(substr(name, 1,1)=="R" | substr(name, 1,1)=="r"){
+       return(paste(name, "plays banjo"))
+     }else{
+       return(paste(name, "does not play banjo"))
+     }
+    }
+    ```
+
+    <https://www.codewars.com/kata/57cc975ed542d3148f00015b/train/r>
+
+    ```{r}
+    check <- function(a, x){
+     for(i in a){
+       if(i == x){
+         return(TRUE)
+       }
+     }
+      return(FALSE)
+    }
+    ```
+
+    <https://www.codewars.com/kata/5875b200d520904a04000003/train/r>
+
+    ```{r}
+    enough <- function(cap, on, wait){
+      if(on+wait <= cap){
+        return(0)
+      }else{
+        return((on+wait)-cap)
+      }
+    }
+    ```
+
+    <https://www.codewars.com/kata/568dcc3c7f12767a62000038/train/r>
+
+    ```{r}
+    set_alarm <- function(employed, vacation) {
+      if(employed==FALSE){FALSE}
+      else if(vacation==FALSE){TRUE}
+      else{FALSE}
+    }
+    ```
+
+    <https://www.codewars.com/kata/5a6663e9fd56cb5ab800008b/train/r>
+
+    ```{r}
+    human_years_cat_years_dog_years <- function(human_years){
+      cat <- 15
+      dog <- 15
+      if (human_years == 1){c(human_years, cat, dog)}
+      else if(human_years == 2){c(human_years, cat+9, dog+9)}
+      else{
+        cat <- cat + 9
+        dog <- dog + 9
+        c(human_years, cat+((human_years-2)*4), dog+((human_years-2)*5))
+      }
+    }
+    ```
+
+2.  Create a function that checks an input of type `int` and returns
+    fizz if the number is a multiple of 3, buzz if the number is a
+    multiple of 5, and fizzbuzz if the number is a multiple of 3 and 5.
+
+    ```{r}
+    fizzbuzz <- function(y){
+      if(y%%15==0){
+        return('fizzbuzz')
+      }else if(y%%3==0){
+        return('fizz')
+      }else if(y%%5==0){
+        return('buzz')
+        }
+    }
+
+    print(fizzbuzz(48))
+    ```
+
+3.  **Mario Challenge:** In the classic Super Mario games, Mario ends
+    each level by ascending a flight of stairs and leaping off the top
+    to arrive at the castle at the end. (See
+    [here](https://youtu.be/-avspZlbOWU?t=55) for details). We can
+    imagine that each of the bricks of the stairs is a character X.
+    Create a function that prints out a set of stairs. For example:
+
+    If the function is called marioStairs() and we pass in the value 4,
+    we would expect to see stairs with a length of 4 and a height of 4:
+
+    X
+
+    XX
+
+    XXX
+
+    XXXX
+
+    ```{r}
+    marioStairs<- function(a){
+      for(i in 1:a){
+        print(paste(rep("X",i),collapse=""))
+      }
+    }
+
+    marioStairs(8)
+    ```
+
+4.  Find a built-in dataset you would like to explore. Explore the
+    dataset and use the cheat sheet you built in Week 1 to label
+    continuous and discrete data. Analyze the dataset using dplyr,
+    create graphs, mutate two columns, and formulate a hypothesis about
+    your data.
+
+#### **Data Types:**
+
+-   sleep_total: Continuous
+
+-   awake: continuous
+
+```{r}
+
+view(msleep)
+```
+
+```{r}
+print(filter(msleep, vore=="omni"))
+print(select(msleep, contains("wt")))
+
+msleep %>%
+  filter(order > "M")%>%
+  arrange(order)
+```
+
+```{r}
+
+```
+
+```{r}
+
+```

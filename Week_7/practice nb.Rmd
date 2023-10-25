@@ -1,0 +1,29 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+babbys first function
+
+```{r}
+
+magic_math <- function(a, b){
+  if(b == 0){
+    return(0)
+  }else{
+   a*b + a/b 
+  }
+}
+```
+
+```{r}
+name <- "stupendous"
+
+class(name)
+```
+
+```{r}
+my_string <- "Hello, World!"
+char_at_1 <- my_string[1]
+print(char_at_1)
+```

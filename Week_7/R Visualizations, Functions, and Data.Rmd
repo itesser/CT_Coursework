@@ -21,7 +21,7 @@ The R library `dplyr` is a super useful too we can use to explore and
 manipulate our data.
 
 ```{r}
-
+install.packages('tidyverse')
 ```
 
 More things we can do to get more information on R and what we're doing:
@@ -35,7 +35,10 @@ install them all at once by using the `c()` function, which creates a
 list. We'll open these packages with the `library()` function later.
 
 ```{r}
+library(tidyverse)
 
+library(nycflights13)
+nycflights13::flights
 ```
 
 ## Exploration
@@ -87,7 +90,13 @@ imagine them like tables in SQL for right now. An example of the dplyr
 syntax:
 
 ```{r}
+#filter on the information in the dataframe where the month is equal to 3 and the day is 31
 
+#filter(df, condition1, condition2)
+
+View(filter(flights, month==3, day==31))
+
+# view opens the requested data in a new tab
 ```
 
 In the above example, I had two arguments - month == 3, and day == 31.
@@ -103,33 +112,44 @@ Much like python, we can compare values using comparison operators -
 comparisons of multiple booleans.
 
 ```{r}
-
+carrier_df <- filter(flights, carrier=='AA' | carrier == 'DL' | carrier == 'UA')
+carrier_df
 ```
 
 ```{r}
+delayed_times_df <- filter(flights, dep_time <= 1000 & sched_arr_time >= 1000 & arr_delay != 0)
 
+View(delayed_times_df)
 ```
 
 ### Arranging Rows
 
 ```{r}
+#grouping by all listed columns 
+View(arrange(flights, year, month, day, desc(sched_dep_time)))
 
 ```
 
 ## Selecting Columns
 
 ```{r}
+#method 1: returns vector-looking thing
+flights$dep_time 
 
+#methid 2: returns 1d dataframe (same data structure underneath)
+flights['dep_time']
 ```
 
 ```{r}
-
+select(flights, year, month, day)
 ```
 
 We can also use `-` to exclude columns from the selection:
 
 ```{r}
 
+#selecting columns except:
+select(flights, -c(carrier, dep_time))
 ```
 
 `dplyr` has built in helper functions that can return data to us as well
@@ -153,7 +173,21 @@ Some examples of these are:
     the rest of the data.
 
 ```{r}
+#select all columns from the flights dataset
+select(flights, everything())
 
+
+#select all columns that start with the letter c
+select(flights, starts_with('c'))
+
+#select all columns that end with d
+select(flights, ends_with('d'))
+
+#select all cols that contain 'g'
+select(flights, contains('g'))
+
+#select all columns that match the gex expression fl|c (contains 'fl' or 'c')
+select(flights, matches('fl|c'))
 ```
 
 Select can also be used to get columns by index. To do so, we use the
@@ -171,7 +205,23 @@ exploring out data. This function allows us to combine observations from
 other columns to create a new column of observations. For example:
 
 ```{r}
+#getting a subset
+flight_data <- select(
+  flights,
+  year:day,
+  ends_with('delay'),
+  distance,
+  air_time
+)
 
+View(flight_data)
+
+#apply a mutation
+flight_data_mut <- mutate(flight_data,
+                          gain = arr_delay - dep_delay,
+                          speed = distance / air_time * 60)
+
+View(flight_data_mut)
 ```
 
 You can now see the `gain` and `speed` columns have been created;
@@ -188,14 +238,14 @@ Transmutation is when we want to create these new variables in our
 dataframe, but only want to return those variables back to us!
 
 ```{r}
-
+# transmute would be the same code, but only returns the newly created columns
 
 ```
 
 ### Summarizing Data
 
 ```{r}
-
+summarize(flights, delay = mean(dep_delay, na.rm=TRUE))
 ```
 
 First off, this is kind of a weird table. It only has one piece of data
@@ -209,7 +259,9 @@ Summarizing data is a lot easier if we use `group_by()` with it. This is
 very similar to how we use aggregate functions in SQL.
 
 ```{r}
+by_day = group_by(flights, year, month, day)
 
+summarise(by_day, delay = mean(dep_delay, na.rm=TRUE))
 ```
 
 ## In-Class Exercise 1:
@@ -227,7 +279,24 @@ Using the built in dataset, `mtcars`;
 -   Summarize your data!
 
 ```{r}
+?mtcars
+View(select(mtcars, starts_with('m')))
 
+View(select(mtcars, ends_with('g')))
+
+View(select(mtcars, matches('mp|c')))
+
+View(mtcars)
+
+View(mutate(mtcars, disp_per_cyl = disp / cyl))
+View(mutate(mtcars, mpg_b_qsec = mpg / qsec))
+
+
+summarize(mtcars, avg_horses = mean(hp))
+summarize(mtcars, avg_mpg = mean(mpg))
+summarize(mtcars, perc_manual = mean(am))
+count_manual <- sum(mtcars$am == 1) # sum of the number of times the calculation is True
+count_manual
 ```
 
 ### Using Pipe to string together functions
@@ -243,7 +312,21 @@ noise and the airport in Honolulu, which is so far away from other
 airports that it will make it hard to see the data we want to focus on.
 
 ```{r}
+# looking at the delay per mile
 
+by_destination <- group_by(flights, dest)
+by_destination
+
+delay <- summarise(
+  by_destination,
+  count=n(), # gives current group size
+  dist=mean(distance, na.rm=TRUE),
+  delay=mean(arr_delay, na.rm=TRUE)
+)
+
+View(delay)
+
+delay <- filter(delay, count >20, dest != 'HNL')
 ```
 
 A more efficient way of doing the same thing, where we don't need to
@@ -251,6 +334,18 @@ write variables for each step over and over, uses pipe:
 
 ```{r}
 
+delays <- flights %>%
+  group_by(dest)%>%
+  summarise(
+    count = n(),
+    dist = mean(distance, na.rm=TRUE),
+    delay = mean(arr_delay, na.rm=TRUE),
+    carrier
+  ) %>%
+  filter(count>20, dest!='HNL')
+
+delays
+            
 ```
 
 This way, we can simply thread queries together without having to write
@@ -266,7 +361,16 @@ Please note: The only part of the tidyverse that won't work with pipe is
 ggplot2. You can pipe into it, but you can't pipe afterwards.
 
 ```{r}
+not_cancelled <- flights %>%
+  filter(!is.na(dep_delay),
+         !is.na(arr_delay)
+         )%>%
+  group_by(year, month, day) %>%
+  summarise(mean = mean(dep_delay),
+            tailnum,
+            arr_delay)
 
+not_cancelled
 ```
 
 ## In-Class Exercise 2:
@@ -277,10 +381,41 @@ group the dataset by the sched_arr_time, summarize the data and View
 your data.
 
 ```{r}
+view(flights)
+```
 
+```{r}
+w_avg_speed <- mutate(flights, avg_speed = distance / (air_time/60))
+
+sorted_df <- w_avg_speed %>%
+  filter(carrier != "UA", !is.na(avg_speed))%>%
+  group_by(sched_arr_time)%>%
+  summarize(carrier, avg_speed, origin, dest, month)
+
+sorted_df
+
+
+#alex's example
+f <- flights %>%
+  filter(carrier != 'UA') %>%
+  group_by(sched_arr_time) %>%
+  summarize(mean = mean(arr_delay, na.rm=TRUE),
+            count = n())
+
+f
 ```
 
 ## Visualizations with ggplot2
+
+```{r}
+delay <- not_cancelled%>%
+  group_by(tailnum)%>%
+  summarize(
+    delay = mean(arr_delay)
+  )
+
+ggplot(data = delay, mapping=aes(x=delay)) + geom_freqpoly(binwidth=10)
+```
 
 Now we can look at the plotted data of delay times, and try to learn
 something about delay times.
@@ -299,7 +434,15 @@ and no delay on it's second flight. That plane would now appear to have
 to be sure that we don't have too small of a data set.
 
 ```{r}
+delay <- not_cancelled%>%
+  group_by(tailnum)%>%
+  summarize(
+    delay = mean(arr_delay),
+    n=n()
+  )
 
+ggplot(data = delay, mapping = aes(x=n, y=delay)) + 
+  geom_point(alpha = 1/10)
 ```
 
 Now we have a better idea. Let's change the plot parameters so we can
@@ -310,7 +453,10 @@ these planes had other issues causing their delays, and they didn't do
 any other flights.
 
 ```{r}
-
+delay %>%
+  filter(n>25)%>%
+  ggplot(mapping = aes(x=n, y=delay)) + 
+  geom_point(alpha = 1/10)
 ```
 
 Looks like the majority of flights leave on time most of the time. This
@@ -322,7 +468,10 @@ with. In the below code block, we create a variable `myplot` and save
 the `mpg` database to it.
 
 ```{r}
+myplot <- mpg
 
+view(mpg)
+view(diamonds)
 ```
 
 **Something you should be aware of and have open (perhaps on a second
@@ -336,7 +485,7 @@ easiest fashion with little to no code. For example, we can look at the
 diamonds dataset and quickly plot the carat and price columns from it
 
 ```{r}
-
+qplot(data = diamonds, carat, price)
 ```
 
 We can see that there is some form of linear relationship here, but with
@@ -345,7 +494,7 @@ these values first. Here's how we can do that using the `log()`
 function:
 
 ```{r}
-
+qplot(log(carat), log(price), data = diamonds)
 ```
 
 Now, we can clearly see the linear relationship between carat and price!
@@ -354,7 +503,7 @@ In another example, we can look at the mtcars dataset and quickly plot
 the carb and cyl columns from it
 
 ```{r}
-
+qplot(carb, cyl, data=mtcars)
 ```
 
 #### Arguments
@@ -363,7 +512,7 @@ Arguments in ggplot2 can be a combination of already existing variables
 as well!
 
 ```{r}
-
+qplot(carat, x*y*z, data = diamonds)
 ```
 
 Some of the basic arguments of `qplot()` are:
@@ -381,6 +530,12 @@ Some of the basic arguments of `qplot()` are:
     scatterplot.
 
 ```{r}
+qplot(carat,
+      price,
+      data = diamonds,
+      color = color,
+      size= 1,
+      alpha = 1/10)
 
 ```
 
@@ -388,7 +543,10 @@ One thing to note is that the color and shape work well with discrete
 data, while size works well with continuous!
 
 ```{r}
-
+#univariate 
+qplot(price, data=diamonds, binwidth = 500) +
+  labs(x = 'price', y = 'frequency', title = 'distribution of diamond prices') +
+  theme(plot.title=element_text(hjust = 5))
 ```
 
 ## In-Class Exercise 3:
@@ -406,7 +564,26 @@ independent and dependent variables.
 ### `ggplot()`
 
 ```{r}
+# ggplot(data, mapping = aes(col1, col2, color))
+# + whatever graphic we want to add on, like geom point
 
+```
+
+```{r}
+ggplot(data = myplot) +
+  geom_point(mapping = aes(displ, hwy))
+```
+
+```{r}
+ggplot(data = myplot, mapping = aes(displ, hwy, color = class)) +
+  geom_point(mapping = aes(displ, hwy))
+```
+
+```{r}
+ggplot(data = myplot, mapping = aes(displ, hwy, color = class)) +
+  geom_point(mapping = aes(displ, hwy))
+
+#for discrete variables, each will have its own color
 ```
 
 ```{r}
@@ -414,15 +591,13 @@ independent and dependent variables.
 ```
 
 ```{r}
-
+ggplot(data = myplot, aes(displ, hwy, color = displ <5)) +
+  geom_point()
 ```
 
 ```{r}
-
-```
-
-```{r}
-
+ggplot(data = myplot, mapping = aes(displ, hwy, color = displ <5)) +
+  geom_point()
 ```
 
 #### Facets
@@ -445,15 +620,27 @@ appropriate facet function to your `ggplot` code and specify the
 variable(s) to use for faceting.
 
 ```{r}
+ggplot(data = myplot)+
+  geom_point(mapping = aes(displ, hwy, shape = drv, color= rgb(.7,1,.3)))+
+  facet_wrap(~class, nrow = 2)
+```
+
+```{r}
+ggplot(data = myplot)+
+  geom_point(mapping = aes(displ, hwy, shape = drv, color= rgb(.7,1,.3)))+
+  facet_wrap(~class, nrow = 2) +
+  scale_shape_manual(values = c(1,2,3))+
+  labs(x='engine displacement in L', y='highway miles per gallon (MPG)')+
+  theme(axis.text.x = element_text(size=10, color = 'blue'),
+        axis.text.y = element_text(size=10, color = 'red'),
+        legend.position = 'bottom')
 
 ```
 
 ```{r}
-
-```
-
-```{r}
-
+ggplot(data=myplot) +
+  geom_point(mapping = aes(displ, hwy, color = class))+
+  facet_grid(drv ~.)
 ```
 
 The \~ symbol in drv \~ . is used to specify the formula for the grid of
@@ -471,7 +658,23 @@ similar function that creates a grid of plots, but instead of arranging
 them in a grid, it wraps them into a single row or column.
 
 ```{r}
+ggplot(data=myplot) +
+  geom_point(mapping = aes(displ, hwy), position = 'jitter')
+```
 
+```{r}
+ggplot(data =  myplot) +
+  geom_smooth(mapping = aes(displ, hwy, linetype=drv))+
+  geom_point(mapping=aes(displ, hwy, color=drv))
+
+#less data means worse prediction, meaning wider variance fields around the lines
+```
+
+```{r}
+# se = false taakes out 'standard error cone'
+ggplot(data =  myplot) +
+  geom_smooth(mapping = aes(displ, hwy, linetype=drv), se=FALSE)+
+  geom_point(mapping=aes(displ, hwy, color=drv))
 ```
 
 ```{r}
@@ -479,15 +682,8 @@ them in a grid, it wraps them into a single row or column.
 ```
 
 ```{r}
-
-```
-
-```{r}
-
-```
-
-```{r}
-
+ggplot(diamonds)+
+  geom_bar(aes(cut))
 ```
 
 Whoa, where'd count come from? **Count is not a variable or attribute of
@@ -502,25 +698,32 @@ For example, the above code block used a geom, but this one uses a stat,
 and results in an identical chart:
 
 ```{r}
-
+# same as 
+ggplot(diamonds) +
+  stat_count(aes(cut))
 ```
 
 Let's add color here!
 
 ```{r}
+ggplot(diamonds) +
+  geom_bar(aes(cut, fill = cut))
+```
 
+```{r}
+ggplot(diamonds) +
+  geom_bar(aes(cut, fill = clarity), position = 'fill')
+```
+
+```{r}
+ggplot(diamonds) +
+  geom_bar(aes(cut, fill = cut), position = 'identity', alpha = 1/5)
 ```
 
 ```{r}
 
-```
-
-```{r}
-
-```
-
-```{r}
-
+ggplot(diamonds) +
+  geom_bar(aes(cut, fill = clarity), position = 'dodge')
 ```
 
 ```{r}
@@ -537,11 +740,31 @@ What if I wanted to add an additional variable to my graph as well as
 change the graphic into a pie chart?
 
 ```{r}
+pie = ggplot(diamonds) +
+  geom_bar(aes(cut, fill = clarity),
+          position = 'fill')+
+  theme(aspect.ratio=1)+
+  labs(x=NULL, y =NULL)
+pie + coord_polar()
 
+##
+pie = ggplot(diamonds) + 
+  geom_bar(aes(cut, fill = clarity),
+           position = 'fill') +
+  theme(aspect.ratio=1)+
+  labs(x=NULL, y=NULL)
+
+pie + coord_polar()
 ```
 
 ```{r}
+pie = ggplot(diamonds) + 
+  geom_bar(aes(cut, fill = clarity),
+           position = 'dodge') +
+  theme(aspect.ratio=1)+
+  labs(x=NULL, y=NULL)
 
+pie + coord_polar()
 ```
 
 #### In-Class Discussion
@@ -550,7 +773,7 @@ Is this a good graphic? Why? What information is being returned to us
 and how is it useful?
 
 ```{r}
-
+#skipping to functions
 ```
 
 #### Box-Plots
@@ -618,12 +841,29 @@ Reproducibility/Automation
 Once I build a function, I can use across my programs.
 
 ```{r}
+#python syntax:
+#def function(params)
+# do stuff
+# return stuff
 
+our_function <- function(optional params){
+  #do stuff
+  #return stuff
+}
+
+our_function(params, should they be needed)
 ```
 
 An example:
 
 ```{r}
+#converting F to C (degrees)
+
+convert_c_to_f <- function(val){
+  temp_far <- val * (9/5) + 32
+  return(temp_far)
+}
+
 
 ```
 
@@ -631,7 +871,13 @@ This is all cool.. but it didn't do anything. We need to call the
 function!
 
 ```{r}
+test_temps <- c(15, 44, 100, 204, 21, 34, 35.1, 22.8, 12.6)
 
+convert_c_to_f(test_temps)
+
+# look ma, no loops
+
+#jumping to factorials (?(?()))
 ```
 
 Notice that in the background here, we are looping over each item in the
@@ -668,7 +914,21 @@ Now, let's create a function to check if a number is even or odd!
 Next, let's calculate a factorial:
 
 ```{r}
+calc_factorial <- function(x){
+  if (x <0){
+    print('factorial is not defined for negative numbers')
+  } else if (x == 0) {
+    print('factorial of 0 is 1')
+  } else {
+    result <- 1
+    for (i in 1:x){
+      result <- result * i
+    }
+    print(paste('factorial of', x, 'is', result))
+  }
+}
 
+#cant do this kind 
 ```
 
 What if we wanted to use a function on a vector?:

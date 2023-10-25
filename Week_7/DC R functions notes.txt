@@ -1,0 +1,32 @@
+FUNCTIONS
+
+==== built in functions ====
+
+na.rm=False is a common default(hidden) argument in R functions.
+na == not available/no value/nan/null
+rm == remove
+
+so na.rm=False means to include null values in the calculation.... which will probably make it fail
+
+~~some stuff repeated from python about arg positioning  ~~~~  
+
+putting in 1 instead of TRUE works (for sd() at least)
+
+-- is the primary arg value for most default functions x?
+this code ran just fine:
+sd(TRUE, x=c(4,2,3,5,6,1,1))
+
+## Check the expected/default args of a function with this function:
+args(>name to check<)
+
+========
+
+By default, R treats the last line of code in a function as "return", same as the last line in a notebook cell. 
+If you're going to explicitly call return, it's a function of its own
+
+IF ---- acts like a function
+
+Even if the final line of code is happening inside an if/else block, it still counts as the last and returns by default
+
+~~~~
+range takes in a vector and specifies the distance between the low and high numbers
