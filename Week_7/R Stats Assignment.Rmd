@@ -1,0 +1,132 @@
+---
+title: "Stats in R Assignment"
+author: "Alex Lucchesi"
+date: "2023/05/30"
+output: html_document
+---
+
+## Assignment
+
+For today's assignment, you will be given a blank notebook and a link to the [Call of Duty Dataset](https://www.kaggle.com/datasets/beridzeg45/call-of-duty-reviews) You will need to fill out the notebook and create your own code chunks to run code. Remember that we use this code without any quotation marks to create a code chunk: '`{r} '` \### Your Goal:
+
+To receive credit for today's assignment, you will need to:
+
+-   Import the dataset
+-   Load the dataset into a tibble
+-   Mutate a new column
+-   Create a hypothesis regarding your data and communicate that hypothesis in a scientific method.
+-   Create a notebook that has markdown cells, explaining your code and process/thoughts. **Your markdown should be well thought out and reflect a thorough analysis.**
+-   Clean the data
+-   Explore the data (include visualizations)
+-   Create a statistical test and communicate the results
+
+# I. Setup and Loading Data
+
+```{r}
+#loading necessary packages
+library(tidyverse, dplyr)
+```
+
+```{r}
+#using an underscore means we're making it a tibble
+cod_df <- read_csv('Call of Duty Reviews.csv')
+
+# view(cod_df)
+
+```
+
+# II. Cleaning Data
+
+```{r}
+rename_cols <- function(x){
+  names(x) <- names(x) %>% str_replace_all(" ", '_') %>% tolower()
+  return(x)
+}
+cod_df <- rename_cols(cod_df)
+cod_tibble <- cod_df
+
+View(cod_tibble)
+```
+
+```{r}
+# checking for null values
+
+sum(is.na(cod_tibble))
+
+#removing them
+
+clean_cod <- cod_tibble %>% drop_na()
+
+View(clean_cod)
+
+```
+
+# III. Adjusting and mutating
+
+```{r}
+# mutating a column
+clean_cod <- clean_cod %>%
+  mutate(combo_score = ((critic_compound_score + user_compound_score)/2)*100) %>%
+  mutate(platform_type = case_when(platform == "PC" ~ "PC",
+                                   platform %in% c("X360", "XONE", "XBSX", "XBOX", "PS4", "PS3", "PS2")~ "MS/Sony",
+                                   platform %in% c("WII", "WIIU", "GC")~"Nintendo",
+                                   platform %in% c("DS", "VITA", "PSP")~"Handheld",
+                                   platform=="iOS" ~ "Mobile")) 
+
+```
+
+# IV. Hypotheses & Linear Model
+
+### Null: COD reviews are steady over time.
+
+### Alternative Hypothesis: There reviews for COD games are getting better (or worse) over time
+
+Method: Dependent variable: Metacritic Score, Independent Variable: Year of Release
+
+Based on the summary of the linear model, there does not seem to be a statistical trend of game ratings going up or down over time.
+
+Let's go to a visualization to check!
+
+```{r}
+fit <- lm(clean_cod$metascore ~ clean_cod$release_year)
+
+summary(fit)
+```
+
+# V. is for Visuals
+
+```{r}
+ggplot(clean_cod, aes(release_year, metascore, color=platform, shape=platform_type))+
+  geom_point(size=4)
+```
+
+# X. Other Viz
+
+```{r}
+avg_player_rating <- mean(clean_cod$user_compound_score)
+
+ggplot(clean_cod) +
+  geom_histogram(binwidth = .1, aes(x=user_compound_score, alpha=0.7), fill ="blue", color = 'black')+
+  geom_vline(xintercept = avg_player_rating, color = "white", linetype = 'dashed') +
+  labs(title = 'distribution of user ratings', x='user rating', y= 'frequency')
+```
+
+```{r}
+
+avg_critic_rating <- mean(clean_cod$critic_compound_score)
+
+ggplot(clean_cod) +
+  geom_histogram(binwidth = .1, aes(x=critic_compound_score, alpha = 0.7), fill ="orange", color = 'black')+
+  geom_vline(xintercept = avg_critic_rating, color = "white", linetype = 'dashed') +
+  labs(ttile = 'distribution of user ratings', x='user rating', y= 'frequency')
+```
+
+```{r}
+ggplot(clean_cod) +
+  geom_histogram(binwidth = .1, aes(x=critic_compound_score, alpha = 0.7), fill ="orange", color = 'black')+
+  geom_histogram(binwidth = .1, aes(x=user_compound_score, alpha=0.7), fill ="blue", color = 'black')
+```
+
+```{r}
+
+```

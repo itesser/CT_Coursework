@@ -1,0 +1,418 @@
+---
+title: 'R: Statistical Testing and Data Cleaning'
+author: "Bonfire-113"
+date: "2023-04-07"
+output: word_document
+---
+
+## Data Analytics Workflow
+
+![](https://d33wubrfki0l68.cloudfront.net/571b056757d68e6df81a3e3853f54d3c76ad6efc/32d37/diagrams/data-science.png)
+
+[Data Analytics Workflow Paper](https://www.coordinationtoolkit.org/wp-content/uploads/130907-Data-flow.pdf)
+
+So far, we have covered Visualize, Transform, Import, and Communicate in our Data Analytics workflow. Today, we will cover over our last two points; Tidy and Model.
+
+## Data Cleaning
+
+### What is "tidy" data?
+
+"Tidy" might sound like a generic way to describe non-messy looking data, but it actually refers to a specific data structure.
+
+A data set is tidy if:
+
+-   Each column is a variable
+
+-   Each row is an observation
+
+-   Each cell is a value.
+
+![](https://nt246.github.io/NTRES6940-data-science/assets/tidy_data.png)
+
+### How do we tidy data in R?
+
+So far, we have covered how we can wrangle in(import/manipulate) data from a source, but now, we need to understand how to clean that data so we can complete accurate analysis of the data!
+
+In R, we can use two packages for tidying data. We can use `dplyr` and `tidyr`. `tidyr` focuses more on the tidying of data, while `dplyr` helps us more with manipulation.
+
+```{r}
+library(tidyverse)
+?tidyr
+```
+
+Let's bring in some data to clean and play around with!
+
+```{r}
+
+df <- read.csv("C:/Users/Alex Lucchesi/coding-temple/coding_temple_data_analytics_ft/week-6/data/wine/winequality-white.csv")
+df
+                        
+```
+
+WOAH! What happened to this dataset?! Let's open the file and view it. When we do, we see that the sep is not a `,` but is a `;`. We should have checked out our data BEFORE we loaded it in! But, let's fix that now:
+
+```{r}
+df <- read.csv("C:/Users/Alex Lucchesi/coding-temple/coding_temple_data_analytics_ft/week-6/data/wine/winequality-white.csv",
+               sep = ';')
+df
+```
+
+#### Cleaning Column Names
+
+We can see that our column names are all separated by a `.` and that is not clean column names. Let's replace these with an `_` using `tidyr`!
+
+```{r}
+my_fun <- function(x){
+  names(x) <- names(x) %>% str_replace_all("\\.", "_")
+  return(x)
+}
+df <- my_fun(df)
+df
+```
+
+Great! Now, let's check out our data types! Does our types match each column? How about the rows? Are we missing any data? How can we check? Let's use some more `tidyr`!
+
+#### Checking Null Values
+
+Let's utilize our `tidyr` knowledge to check for any missing values within our dataset!
+
+```{r}
+#is.na(df)
+
+# Using tidyr
+df  %>% summarise(na_count = sum(is.na(df)))
+
+# Using base R
+colSums(is.na(df))
+sum(is.na(df))
+```
+
+```{r}
+df%>%summarise(data_type = class(df))
+
+```
+
+Wait, I am only returning a data.frame type in this block of code! Something must be going on here. Maybe we should try to reshape the data set before checking this out!
+
+#### Reshape Data
+
+Reshaping data refers to lengthening or widening a data set, which is helpful in many forms of analysis, modeling, visualizations, etc.
+
+##### `pivot_longer()`
+
+`pivot_longer()` is a function that can "lengthen" data by collapsing several columns into 2. The "lengthen" is because instead of being "wide", it becomes "long", meaning more rows, less columns. Column names move to a new names_to column and values to a new values_to column! Some forms of analysis benefit from data being in a long format, where each row is a representation of a single observation.
+
+```{r}
+# T-tests want long data
+
+df_long <- pivot_longer(df, everything(), names_to= "col", values_to="val")
+df_long <- df_long %>% group_by(col) %>% summarise(data_type = class(val))
+df_long
+```
+
+There we go! Now we can finally see the types of our data! Remember that an integer can be a numeric data type, while not all numeric types can be integers! Tibble categorizes, infers this, and casts all as a numeric type!
+
+##### `pivot_wider()`
+
+`pivot_wider()` is a function that does the exact inverse of our previous function, `pivot_longer()`. It "widens" the data by expanding two columns into several. One column provides the new column names and the other the value!
+
+**NOTE: the key given to `spread()` MUST be a unique identifier!**
+
+```{r}
+df_long <- data.frame(
+  id = rep(1:3, 2),
+  variable = rep(c("var1", "var2"), each = 3),
+  year = rep(c(2010, 2011), 3),
+  value = c(2, 3, 4, 10, 12, 14)
+)
+
+df_long
+
+df_wide <- df_long %>% 
+  pivot_wider(
+    id_cols = id,
+    names_from = c("variable", "year"),
+    values_from = value
+  )
+
+df_wide
+```
+
+Look at this! We now have some null values! Let's use `tidyr` with `dplyr` to fix this:
+
+```{r}
+df_wide_filled <- df_wide %>%
+  mutate(across(everything(), ~ replace_na(.,0)))
+df_wide_filled
+```
+
+Wait, what did I just do?
+
+In the across function, we place a `~`. This is going to define an anonymous function that takes a single argument(which is the current column being processed in our Tibble) and the `.` is our placeholder for that argument!
+
+Great! Now we have a data set that contains no null values and have learned exactly how we should
+
+## In-Class Exercise 1:
+
+Using the Red Wine Quality Dataset, load in the data and conduct an analysis on that data. Are all the column types as they should be? Do the columns need to be cleaned? Are there any null values? If any of these are true, let's fix it.
+
+Once you answer these questions, practice transforming the data set from it's current format to a long format!
+
+```{r}
+
+```
+
+#### Separate and Unite Columns
+
+Now, let's assume that we want to split a column into multiple columns. How could we possibly do that? In `tidyr`, we have a function called `separate()`
+
+```{r}
+df <- data.frame(names = c("John_Doe", "Jane_Smith", "Bob_Johnson"),
+                 age = c(25, 30, 35))
+
+df_new <- separate(df, col = names, into = c("first_name", "last_name"), sep = "_")
+
+df_new
+
+my_data <- unite(df_new, full_name, first_name, last_name, sep=" ")
+
+my_data
+```
+
+## Statistical Analysis in R
+
+To perform statistical analysis in R, we will utilize base R. R does have some machine learning libraries available if working with models in R is something that interests you, [check this out!](http://topepo.github.io/caret/index.html)
+
+Let's start off with some randomly generated data. We will utilize some math here to create this data.
+
+```{r}
+# Make some data
+# X increases (noisily)
+# Z increases slowly
+# Y is constructed so it is inversely related to xvar and positively related to xvar*zvar
+set.seed(955)
+xvar <- 1:20 + rnorm(20,sd=3)
+zvar <- 1:20/4 + rnorm(20,sd=2)
+yvar <- -2*xvar + xvar*zvar/5 + 3 + rnorm(20,sd=4)
+
+# Make a data frame with the variables
+dat <- data.frame(x=xvar, y=yvar, z=zvar)
+?rnorm
+# Show first few rows
+head(dat)
+```
+
+## Correlation Analysis
+
+In statistics, certain outcomes have a direct relation to other situations or variables, and the `correlation coefficient` is the measure of that direct association of two variables or situations. These variables exhibit a positive `correlation coefficient` when they move in the same direction at the same time. Similarly, if they move in a different and opposite direction, they are said to have a negative `correlation coefficient`.
+
+**For Example:**
+
+If the market's interest rate falls, corporate loans will be cheaper, and the economy will boost. So the interest rate and growth of the economy have a positive correlation coefficient. The value of the correlation coefficient defines the strength of the relationship between variables. The maximum value of the correlation coefficient varied from +1 to -1. If the correlation coefficient is +1, then the variables are perfectly positively correlated, and if that value is -1, then it is called perfectly negatively correlated.
+
+![](https://cdn.educba.com/academy/wp-content/uploads/2019/06/Correlation-Coefficient-Formula.jpg)
+
+*where:*
+
+-   $X$ -- Data points in Data set X
+
+-   $Y$ -- Data points in Data set Y
+
+-   $Xm$ -- Mean of Data set X
+
+-   $Ym$ -- Mean of Data set Y
+
+### Uni-variate Analysis
+
+```{r}
+cor(dat$x, dat$y)
+```
+
+### Multi-variate Analysis/ Correlation Matrices
+
+```{r}
+cor_mat <- cor(dat)
+print(class(cor_mat))
+print(round(cor_mat, 2))
+```
+
+The correlation coefficient helps us to understand the data sets and their relationship better and has many applications in finance and economics. Financial institutes, banks, companies, and even governments use correlation coefficients to track the historical data and extract meaningful information and predict market trends in an efficient way. A correlation coefficient is a very powerful tool, but it should not be used in a silo and apply along with other tools. The reason for that is simple; we cannot simply rely on data, and data sometimes gives us unmeaning full information.
+
+## Linear Regression
+
+![](https://editor.analyticsvidhya.com/uploads/375512.jpg)
+
+### Univariate Linear Regression (Simple Linear Regression)
+
+Linear regression shows the linear relationship between the independent(predictor) variable i.e. X-axis and the dependent(output) variable i.e. Y-axis, called linear regression. If there is a single input variable X(independent variable), such linear regression is called simple linear regression.
+
+```{r}
+# dependent, tilde, independent
+
+fit <- lm(y ~ x, data=dat)  # Using the columns x and y from the data frame
+fit <- lm(dat$y ~ dat$x)     # Using the vectors dat$x and dat$y
+fit
+```
+
+Now that we created the model object, let's get a more detailed look at how our model is performing!
+
+```{r}
+# Get more detailed information:
+summary(fit)
+```
+
+F-statistic? Degrees of Freedom? Signif. Codes? What do these mean?!
+
+#### F-Statistic
+
+![](https://1.bp.blogspot.com/_4Ey9QvsNhXM/TSvVSxdgiZI/AAAAAAAAAEg/jvb5J23nxfs/s1600/Figure+14+-+Formula+F+statistic.JPG)
+
+The F-statistic is a ratio of two variances and is used to determine whether the means of two populations are significantly different from each other. Specifically, it is used to test the null hypothesis that the means of two populations are equal.
+
+To calculate the F-statistic, we divide the larger of two sample variances by the smaller of two sample variances. The resulting value is compared to an F-distribution with degrees of freedom based on the sample sizes and is used to calculate a p-value.
+
+It is important to note that the F-statistic is only applicable when comparing two groups, and that it assumes the populations being compared are normally distributed and have equal variances.
+
+#### Degrees of Freedom
+
+`Degrees of Freedom` refers to the statistical indicator that shows how many variables in a data set can be changed while abiding by certain constraints. In other words, the degree of freedom indicates the number of variables that need to be estimated in order to complete a data set.
+
+![](https://cdn.educba.com/academy/wp-content/uploads/2019/12/Degree-of-Freedom-Formula.jpg)
+
+The formula for degrees of freedom for single variable samples, such as a 1-sample t-test with sample size N, can be expressed as sample size minus one. Mathematically, it is represented as $N - 1$
+
+The formula for degrees of freedom for two-variable samples, such as the Chi-square test with R number of rows and C number of columns, can be expressed as the product of a number of rows minus one and number of columns minus one. Mathematically, it is represented as, $(R-1) * (C-1)$
+
+#### Signif. Codes
+
+Significance codes, also known as asterisks or p-value symbols, are commonly used in statistical tables and output to indicate the level of statistical significance of a result. The codes are usually displayed alongside the estimated coefficients, standard errors, and p-values in regression output, ANOVA tables, and other statistical summaries.
+
+The most commonly used significance codes are:
+
+-   `***` : p-value \< 0.001 (highly significant)
+
+-   `**` : p-value \< 0.01 (very significant)
+
+-   `:` p-value \< 0.05 (significant)
+
+-   `.` : p-value \< 0.1 (marginally significant)
+
+These codes indicate the d
+
+```{r}
+
+```
+
+hat there is no difference or no association between variables, and the alternative hypothesis is a statement that there is a difference or an association. The p-value is the probability of observing the test statistic (or a more extreme one) under the null hypothesis. A low p-value indicates strong evidence against the null hypothesis, and thus, a higher level of statistical significance.
+
+### Multi-Variate Linear Regression
+
+```{r}
+fit2 <- lm(y ~ x + z, data=dat)    # Using the columns x, y, and z from the data frame
+fit2 <- lm(dat$y ~ dat$x + dat$z)  # Using the vectors x, y, z
+fit2
+summary(fit2)
+
+```
+
+```{r}
+# These are equivalent; the x*z expands to x + z + x:z
+fit3 <- lm(y ~ x * z, data=dat) 
+fit3 <- lm(y ~ x + z + x:z, data=dat) 
+fit3
+
+summary(fit3)
+
+```
+
+## In Class Exercise 2:
+
+Using the red-wine dataset you cleaned earlier, create a linear model in R and use ggplot2 to create a visualization of the line of fit
+
+```{r}
+
+```
+
+## Logistic Regression
+
+![](https://i.ytimg.com/vi/_LDUTSahq38/maxresdefault.jpg)
+
+Logistic regression is a statistical method used for binary classification problems, where the goal is to predict a binary outcome (e.g. success/failure, yes/no, etc.) based on one or more predictor variables. It is a type of generalized linear model (GLM) that models the probability of the binary outcome as a function of the predictor variables.
+
+The logistic regression model assumes that the probability of the binary outcome (which is represented by the dependent variable or response variable, denoted as y) can be expressed as a logistic function of the linear combination of the predictor variables (which are represented by the independent variables or explanatory variables, denoted as x).
+
+The logistic function is also known as the sigmoid function and has an S-shaped curve. It maps any real-valued input to an output between 0 and 1, which can be interpreted as a probability.
+
+The coefficients (denoted as β) are estimated from the training data using a maximum likelihood estimation (MLE) method. The goal of the MLE is to find the values of the coefficients that maximize the likelihood of observing the training data, given the logistic regression model.
+
+Once the coefficients are estimated, the logistic regression model can be used to make predictions on new data. The predicted probability of the binary outcome can be calculated using the logistic function and the estimated coefficients:
+
+The predicted probability can be interpreted as the probability of the binary outcome being 1, given the values of the predictor variables.
+
+```{r}
+df <- read.csv("C:/Users/Alex Lucchesi/coding-temple/coding_temple_data_analytics_ft/week-3/data/Titanic.csv")
+```
+
+```{r}
+model <- glm(Pclass ~ Fare, data=df)
+summary(model)
+
+```
+
+## T-tests
+
+```{r}
+sleep
+```
+
+Suppose the two groups are independently sampled; we'll ignore the ID variable for the purposes here.
+
+The `t.test` function can operate on long-format data like sleep, where one column (extra) records the measurement, and the other column (group) specifies the grouping; or it can operate on two separate vectors.
+
+```{r}
+t.test(extra ~ group, sleep)
+```
+
+By default, `t.test` does not assume equal variances; instead of Student's `t-test`, it uses the Welch `t-test` by default. Note that in the Welch `t-test`, `df`=17.776, because of the adjustment for unequal variances. To use Student's `t-test`, set `var.equal`=TRUE.
+
+```{r}
+t.test(extra ~ group, sleep, var.equal=TRUE)
+```
+
+### Paired-Sample T-Test
+
+You can also compare paired data, using a paired-sample t-test. You might have observations before and after a treatment, or of two matched subjects with different treatments.
+
+Again, the t-test function can be used on a data frame with a grouping variable, or on two vectors. It relies the relative position to determine the pairing. If you are using long-format data with a grouping variable, the first row with group=1 is paired with the first row with group=2. It is important to make sure that the data is sorted and there are not missing observations; otherwise the pairing can be thrown off. In this case, we can sort by the group and ID variables to ensure that the order is the same.
+
+```{r}
+# Sort by group then ID
+sleep <- sleep[order(sleep$group, sleep$ID), ]
+
+# Paired t-test
+t.test(extra ~ group, sleep, paired=TRUE)
+
+plot(extra ~ group, data = sleep)
+## Traditional interface
+with(sleep, t.test(extra[group == 1], extra[group == 2]))
+```
+
+### Chi-Squared Testing (2-sample)
+
+Chi-squared testing is a statistical method used to determine whether there is a significant association between two categorical variables. The test is based on the difference between the observed frequencies and the expected frequencies under the assumption of independence between the two variables.
+
+![](https://miro.medium.com/max/2832/0*wcKXWLeiTZB_9RZW)
+
+```{r}
+# Load the dataset
+data("mtcars")
+
+# Create a contingency table
+observed <- table(mtcars$vs, mtcars$am)
+
+# Perform a chi-squared test
+result <- chisq.test(observed)
+
+# Print the result
+print(result)
+```

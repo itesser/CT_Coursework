@@ -782,13 +782,18 @@ to generate a box-plot, we can use the `geom_boxplot()` function in
 conjunction with our `ggplot()` library
 
 ```{r}
-
+h
 ```
 
 #### Customizing a box-plot
 
 ```{r}
-
+ggplot(myplot, aes(class, hwy)) +
+  geom_boxplot(fill = '#336699', color = '#336699', alpha = 0.7) +
+  geom_jitter(width = 0.2, height = 0, color = '#FFA550', alpha = 0.7)+
+  labs(title = 'Highway MPG by Car CClass', x = 'Car Class', y = 'Highway MPG') +
+  theme_bw() +
+  coord_flip()
 ```
 
 ## In-Class Exercise 4:
@@ -800,11 +805,20 @@ creating the graphic. Your graphic should include colors, a title for
 all axes and for the graphic itself.
 
 ```{r}
+library(Lahman)
+Lahman::Salaries
+
+view(Salaries)
 
 ```
 
 ```{r}
+ggplot(Salaries, aes(yearID, salary, color = teamID, shape = lgID))+
+  geom_point()
+```
 
+```{r}
+?datasets
 ```
 
 ## Vizulations Cont.
@@ -812,17 +826,26 @@ all axes and for the graphic itself.
 #### Map Data
 
 ```{r}
+nz <- map_data('nz')
 
+ggplot(nz, aes(long, lat, group = group))+
+  geom_polygon()
 ```
 
 ```{r}
-
+ggplot(nz, aes(long, lat, group = group))+
+  geom_polygon()+
+  coord_quickmap()
 ```
 
 #### Customize a map
 
 ```{r}
-
+ggplot(nz, aes(long, lat, group = group))+
+  geom_polygon(fill = 'white', color = 'black')+ # color = border/outline
+  coord_quickmap()+
+  labs(x= 'longitude', y='latitude', title = 'map of nz') +
+  theme(axis.title = element_text(size=10))
 ```
 
 ## Functions and Conditionals
@@ -892,7 +915,11 @@ follows: `apply(X, MARGIN, FUN)` where X is the data set to use, MARGIN
 is specification for rows or columns, and FUN is the function to apply.
 
 ```{r}
+test_mat <- matrix(C(1,1,1,2,2,2), nrow = 2)
 
+test_mat
+
+apply(test_mat, 2, sum)
 ```
 
 It is common to use `mean`, `median`, `sum`, `min`, or `max` with
@@ -900,7 +927,7 @@ It is common to use `mean`, `median`, `sum`, `min`, or `max` with
 that apply() only works with matrices.
 
 ```{r}
-
+test_temp_mat <- matrix(test_temps)
 ```
 
 #### More Functions!
@@ -928,13 +955,19 @@ calc_factorial <- function(x){
   }
 }
 
-#cant do this kind 
+#cant do this kind of function on a vector, since it 
 ```
 
 What if we wanted to use a function on a vector?:
 
 ```{r}
-
+calc_mean <- function(x){
+  #expects a vector, but what if the vector is empty?
+  # base_case == take care of what will break the function first
+  if(length(x)==0){
+    print
+  }
+}
 ```
 
 ```{r}
