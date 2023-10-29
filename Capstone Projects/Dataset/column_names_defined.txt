@@ -1,0 +1,82 @@
+flickr_id: image ID on flickr
+portion: 0 = whole image, 1-9 = which portion
+full_id: concat of the two above, portion rendered as two digits
+x_dim: image width in pixels
+y_dim: image height in pixels
+center_rgb: rgb value of center pixel
+r_min: red channel, min value
+r_max: red channel, max value
+r_mean: red channel, average value
+r_mode: red channel, most common value
+g_min: green channel, same stats
+g_max
+g_mean
+g_mode
+b_min: blue channel, same stats
+b_max
+b_mean
+b_mode
+center_hsl: center pixel value, rendered in hue/saturation/lightness
+common_hsl_1_val: most common hsl value
+common_hsl_1_count: qty of most common hsl value
+common_hsl_2_val: second most common hsl value
+common_hsl_2_count: qty of second most common hsl value
+common_hsl_3_val
+common_hsl_3_count
+common_hsl_4_val
+common_hsl_4_count
+hue_mean_val: average of all hue values
+sat_mean_val: average of all saturation values
+light_mean_val: average of all brightness values
+light_max_val: max lightness value
+light_max_count: qty of pixels within .015 of max value
+light_min_val: minimum lightness value
+light_min_count: qty of pixels within .015 of min value
+light_25_value: lightness value at 25% quartile
+light_50_value: lightness value at 50% quartile (median)
+light_75_value: lightness value at 75% quartile
+gen_bright_count: qty pixels brighter than 85%
+gen_dark_count: qty of pixels darker than 15%
+sat_min_val: saturation min value
+sat_25_val: saturation value at 25% quartile
+sat_50_val: saturation value at 50% quartile (median)
+sat_75_val: saturation value at 75% quartile
+sat_max_val: saturation max value
+vivid_count: qty of pixels with a saturation over .7 and brightness between .3 and .7
+full_red_count: qty of pixels with hue in the "red" range (35 degrees)
+visib_red_count: qty of pixels with a saturation above .4, brightness between .2 and .75, and hue in the "red" range
+vivid_red_count: qty of pixels with a saturation over .7 and brightness between .3 and .7, and hue in the "red" range
+full_orange_count: qty of pixels with hue in the "orange" range (20 degrees)
+visib_orange_count
+vivid_orange_count
+full_yellow_count: qty of pixels with hue in the "yellow" range (45 degrees)
+visib_yellow_count
+vivid_yellow_count
+full_green_count: qty of pixels with hue in the "green" range (60 degrees)
+visib_green_count
+vivid_green_count
+full_cyan_count: qty of pixels with hue in the "cyan" range (75 degrees)
+visib_cyan_count
+vivid_cyan_count
+full_blue_count: qty of pixels with hue in the "blue" range (20 degrees)
+visib_blue_count
+vivid_blue_count
+full_purple_count: qty of pixels with hue in the "purple" range (50 degrees)
+visib_purple_count
+vivid_purple_count
+full_mag_count: qty of pixels with hue in the "mag" (magenta) range (55 degrees)
+visib_mag_count
+vivid_mag_count
+post_num_regions: number of regions in posterized/segmented image
+post_top_hsl: most common hsl value in posterized image
+post_top_count: qty of most common value in posterized image
+post_2_hsl: second most common hsl value in posterized image
+post_2_count: qty of second most common value in posterized image
+post_3_hsl
+post_3_count
+post_4_hsl
+post_4_count
+post_5_hsl
+post_5_count
+post_6_hsl
+post_6_count

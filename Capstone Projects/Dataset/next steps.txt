@@ -1,0 +1,45 @@
+put it all together into a class!
+
+- (DONE) I also need to do a little more thinking/organizing about the table all my datapoints will be saved to. 
+--- and a little cleanup when it comes to pulling the actual values.
+
+--- (DONE) Oh, gotta figure my img download sequence!
+(DONE) **also make sure to save dimensions somewhere**
+
+
+procedure notes:
+
+- Read asset list into memory
+-- make sure it's not a string (*&^*&)
+- randomize an index and pop it into WORKING-ID
+- Save working ID into "these have been worked on" text file
+- overwrite asset list.... every time? probably?
+
+-- Use the same kind of while loop we did for sourcing to do it in chunks, but at some point im gonna have to let it run for many hours
+
+
+
+Pseudocode for the class:
+
+def get_photo 
+  - pull flickr id from list
+  - do the exif funct
+  - do the download funct
+
+def prep_segments(flickrid):
+  - save coordinates to class attribute
+
+def get_values(photoid, segment=0)
+  - set ID based on photo id + segment
+  - do all the above processes
+  - make a dict of all the values described above
+  - append to csv
+
+
+get_photo(flickr id)
+prep_segments(flickr id)
+get_values(flicker id)
+
+for i in range(1,10):
+    get_values(flickr id, i)
+    - will use coordinates saved by pre_segments to get them on the fly. 

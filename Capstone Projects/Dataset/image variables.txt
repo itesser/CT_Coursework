@@ -1,0 +1,74 @@
+per image type:
+
+6 unfiltered values
+---
+average
+most common
+- second most common
+darkest
+lightest
+middle pixel (r/g/b)
+
+** brightness ratio **
+- .2126  r , .7152G, .0722B
+
+
+% below dark threshold
+% above bright threshold
+% above saturation threshold
+
+
+for each channel:
+----
+most common
+- second most common
+lightest
+darkest 
+
+
+
+4 filtered values
+posterized (https://github.com/fjean/pymeanshift)
+- top 6 colors
+
+after each image manipulation, the pixel values can be sorted into a 1-D array for numeric processing. 
+
+order of operations:
+0) linearize
+1) partition.
+2) split to normal/posterized
+Normal:
+3) convert to HSL
+4) get center pixel {1} DONE
+5) reshape to 1D array DONE (Added as combined column in data frame)
+6) count values, name top 3 {3} (DONE, saved as pandas series common_pix)
+7) re-reshape to 2D, each row being a pixel, the three columns being H/S/L. DONE
+8) Average each H/S/L {3} DONE
+9) Brightest pixel (and count) {2} DONE (arbitrarily counting anything within 1.5% as brightest)
+10) least bright pixel (and count) {2} DONE (same as above)
+11) brightness distribution (quartiles, % above 85, % below 15) {5} DONE (number adjusted, min/max brightness already covered)
+12) saturation distribution {5} DONE 
+13) % with saturation above 70 AND lightness between 30 and 70 {1} DONE
+14) hue distribution within above subset (% of overall pixels) {6} DONE
+14) hue distribution by banding {6} DONE
+
+posterized:
+15) Convert to HSL DONE
+16) reshape to 1D DONE
+17) top 6 colors. {6} DONE
+
+Total color analysis datapoints: 44
+EXIF data points: 8
+Flickr ID: 1
+partition ID: 1
+
+EXIF data:
+jfif == unedited from SlowShutterCam
+date
+focal length
+lens info
+exposure time
+ISO
+software
+brightness value
+aperture

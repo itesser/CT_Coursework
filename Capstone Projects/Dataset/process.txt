@@ -1,0 +1,14 @@
+flickr api to crawl my photostream in reverse chronological order
+list of checked IDs
+get photo ID
+validate not in Checked IDS
+Validate with exif
+if exif = true:
+save exif data to CSV #1, PK(primary key) flickr ID
+download image
+linearize (code available)
+process whole image with partition id = 0
+save to CSV #2, PK(primary key) serial, FK(foreign key) flickerID 
+process image partitions (IDs 1-9)
+save to csv #2
+
