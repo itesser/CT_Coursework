@@ -437,7 +437,7 @@ class FlickrData:
 
 doinit = FlickrData()
 count = 0
-while count < 120:
+while count < 220:
     doinit.manage_photo_list()  # works!
     doinit.do_exif()  # works!
     doinit.get_image()  # works!
