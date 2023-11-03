@@ -1,0 +1,248 @@
+---
+title: "Dataset Capstone"
+output: html_notebook
+---
+
+# Overview
+
+## Part 2: 2-D plots
+
+# R
+
+## Preparing the Data
+
+### Imports
+
+```{r}
+
+library(tidyverse)
+library(plotly)
+
+exif <- read_csv("capstone_exif.csv")
+img_data <- read_csv("capstone_img_data.csv")
+
+```
+
+### Cleaning
+
+**Pre Import:**\
+Sub-image data for main images (0) was bugged in the first hours of image processing. This was fixed in Excel during the data collation stage.
+
+[Editors Note: numeric values looked consistent in Excel and R Studio, but were interpreted as characters, necessitating a large amount of manual re-typing in part 2. At the time it seemed faster than backing up and figuring out the 'right' way to fix them]
+
+**EXIF:**
+
+-   Fix column headers
+-   Drop columns: date_time_original, modify_date, lens_info, f_number, focal_length
+-   NA values - JFIF \<- 0,  subject_area \<- \>depends on data type\< "0 0 0 0"
+
+```{r}
+names(exif) <- gsub("([a-z0-9])([A-Z])", "\\1_\\2", names(exif))
+names(exif) <- names(exif) %>% tolower()
+
+exif_tidy <- select(exif, -c(date_time_original, modify_date, lens_info, fnumber, focal_length))
+exif_tidy <- replace_na(exif_tidy, list(subject_area = "0 0 0 0", jfifversion = 0))
+
+```
+
+**img_data:**
+
+-   Drop columns: flickr, img_loc, the_image, crop_coords, r_mode, b_mode, g_mode, img_height, img_width, do_img_at
+-   Na values - post_2-6_hsl \<- (-1,-1,-1)
+
+```{r}
+imgsd_tidy <- select(img_data, -c(flickr, img_loc, the_image, img_width, img_height, crop_coords, do_img_at, r_mode, b_mode, g_mode))
+
+imgsd_tidy <- replace_na(imgsd_tidy, list(
+  post_2_hsl = "(-1, -1, -1)",
+  post_3_hsl = "(-1, -1, -1)",
+  post_4_hsl = "(-1, -1, -1)",
+  post_5_hsl = "(-1, -1, -1)",
+  post_6_hsl = "(-1, -1, -1)"
+  )
+  )
+
+```
+
+### Basic Feature Engineering
+
+**EXIF**
+
+-   Split date_time_original to year, month-day, time columns
+-   Date column uses a placeholder year so month-to-month comparisons are consistent
+
+```{r}
+
+exif_tidy <- exif_tidy %>% separate(create_date, into = c('date', 'time'), sep = " ", remove = TRUE) %>% separate(date, into = c('year', 'month', 'day'), sep = ":") 
+
+exif_tidy$date <- as.Date(paste("1881", exif_tidy$month, exif_tidy$day, sep = "-"), format ="%Y-%m-%d")
+```
+
+**Img_data**
+
+-   Count by flickr id
+
+    -   Flag counts under 10
+    -   Flag counts under 6 (ie: subimage 5 not available)
+    -   Output list of all flickrIDs with less than 10 records for additional (future) processing
+
+```{r}
+
+subimg_qty <- imgsd_tidy %>% count(using_id)
+
+```
+
+To my (happy) surprise, only 5 images have less than 10 results and only 2 have less than 6. In the interest of time, I'm noting these IDs by hand and simply removing them from my working data
+
+```{r}
+
+good_ids <- subimg_qty[subimg_qty$n >=6, "using_id"]
+
+imgsd_tidy <- imgsd_tidy %>% filter(using_id %in% good_ids$using_id)
+
+exif_tidy <- exif_tidy %>% filter(flickr_id %in% good_ids$using_id)
+
+```
+
+-   Total pixels = full\_(hue)\_count(s) (dimension data incorrect for first 1400 records)
+
+```{r}
+
+imgsd_tidy <- imgsd_tidy %>% mutate(total_pixels = full_red_count +
+                                      full_orange_count +
+                                      full_yellow_count +
+                                      full_green_count +
+                                      full_cyan_count +
+                                      full_blue_count + 
+                                      full_purple_count +
+                                      full_mag_count)
+
+```
+
+-   Split pixel lists/tuples for 3-d mapping
+
+```{r}
+# remove brackets from string-encapsulated lists
+imgsd_tidy$center_hsl <- str_replace(imgsd_tidy$center_hsl, '\\[|\\]', '')
+
+# remove parens from string-encapsulated tuples
+imgsd_tidy <- imgsd_tidy %>% mutate_all(~ gsub('\\(|\\)', '', .))
+
+# separate pixel values into individual columns
+imgsd_split <- imgsd_tidy %>% 
+  separate(center_rgb, 
+           into = c('center_r', 'center_g', 'center_b'), 
+           sep = ',') %>%
+  separate(post_top_hsl, 
+           into = c('post_top_hue', 'post_top_sat', 'post_top_light'), 
+           sep = ',') %>%
+  separate(post_2_hsl, 
+           into = c('post_2_hue', 'post_2_sat', 'post_2_light'), 
+           sep = ',') %>%
+  separate(post_3_hsl, 
+           into = c('post_3_hue', 'post_3_sat', 'post_3_light'), 
+           sep = ',') %>%  
+  separate(post_4_hsl, 
+           into = c('post_4_hue', 'post_4_sat', 'post_4_light'), 
+           sep = ',') %>%
+  separate(post_5_hsl, 
+           into = c('post_5_hue', 'post_5_sat', 'post_5_light'), 
+           sep = ',') %>%
+  separate(post_6_hsl, 
+           into = c('post_6_hue', 'post_6_sat', 'post_6_light'), 
+           sep = ',') %>%
+  separate(center_hsl, 
+           into = c('center_hue', 'center_sat', 'center_light'), 
+           sep = ',') %>%
+  separate(common_hsl_1_val, 
+           into = c('common_hsl_1_hue', 'common_hsl_1_sat', 'common_hsl_1_light'), 
+           sep = ',') %>%
+  separate(common_hsl_2_val, 
+           into = c('common_hsl_2_hue', 'common_hsl_2_sat', 'common_hsl_2_light'), 
+           sep = ',') %>%
+  separate(common_hsl_3_val, 
+           into = c('common_hsl_3_hue', 'common_hsl_3_sat', 'common_hsl_3_light'), 
+           sep = ',') %>%
+  separate(common_hsl_4_val, 
+           into = c('common_hsl_4_hue', 'common_hsl_4_sat', 'common_hsl_4_light'), 
+           sep = ',')
+
+```
+
+... I probably should have saved those independently during the python image processing stage.
+
+-   To be added as needed:
+
+    -   Using total_pixels to calculate specific ratios
+
+## Exploration
+
+### 2D Scatter
+
+```{r}
+custom_colors = c('#de4bcd','#8f2411', '#f5b049', '#9c8a1c', '#b3e32d',  '#1a9615', '#05ffb4','#055eab', '#6b63ff','#45008f')
+
+imgsd_split$common_hsl_4_hue <- as.numeric(imgsd_split$common_hsl_4_hue)
+imgsd_split$common_hsl_4_sat <- as.numeric(imgsd_split$common_hsl_4_sat)
+
+fig <- plot_ly(imgsd_split, 
+               x=~common_hsl_4_hue, 
+               y= ~common_hsl_4_sat, 
+               type = "scatter", mode="markers", size = 2, color = ~sub_img, colors = custom_colors)
+
+fig
+
+```
+
+Observation: Here we can more closely examine the hue trends present in the images. I'm fascinated by the cluster at 105 hue/60-80 saturation which is present in many sub-images but not 3, 9, or 6.
+
+-   Light min x light max
+
+```{r}
+
+imgsd_split$light_min_val <- as.numeric(imgsd_split$light_min_val)
+imgsd_split$light_max_val <- as.numeric(imgsd_split$light_max_val)
+
+fig <- plot_ly(imgsd_split, 
+               x=~light_min_val, 
+               y= ~light_max_val, 
+               type = "scatter", mode="markers", 
+               size = 2, color = ~sub_img, colors = custom_colors)
+
+fig
+
+```
+
+-   Gen bright x gen dark
+
+```{r}
+imgsd_split$gen_bright_count <- as.integer(imgsd_split$gen_bright_count)
+
+
+imgsd_split$gen_dark_count <- as.integer(imgsd_split$gen_dark_count)
+
+fig <- plot_ly(imgsd_split, 
+               x=~gen_bright_count, 
+               y= ~gen_dark_count, 
+               type = "scatter", mode="markers", 
+               size = 2, color = ~sub_img, colors = custom_colors)
+
+fig
+```
+
+-   Sat min x sat max
+
+```{r}
+
+imgsd_split$sat_min_val <- as.numeric(imgsd_split$sat_min_val)
+imgsd_split$sat_max_val <- as.numeric(imgsd_split$sat_max_val)
+
+fig <- plot_ly(imgsd_split, 
+               x=~sat_min_val, 
+               y= ~sat_max_val, 
+               type = "scatter", mode="markers", 
+               size = 2, color = ~sub_img, colors = custom_colors)
+
+fig
+
+```
